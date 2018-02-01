@@ -1,7 +1,7 @@
 {
-  "name": "deflou/user",
-  "description": "User package for DeFlou",
-  "keywords": ["user", "group", "identity", "deflou"],
+  "name": "deflou/yii2-service",
+  "description": "Yii2 service package for DeFlou",
+  "keywords": ["yii2", "service", "deflou"],
   "type": "project",
   "license": "BSD-3-Clause",
   "require": {
