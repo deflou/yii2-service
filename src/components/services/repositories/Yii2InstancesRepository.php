@@ -2,8 +2,11 @@
 namespace deflou\components\services\repositories;
 
 use deflou\components\services\Yii2ServiceInstance;
+use deflou\interfaces\services\IServiceDescription;
+use deflou\interfaces\triggers\events\ITriggerEvent;
 use deflou\interfaces\services\IServiceInstance;
 use deflou\interfaces\services\repositories\IServiceInstancesRepository;
+use deflou\interfaces\triggers\ITrigger;
 use deflou\models\services\Yii2ServicesInstances;
 
 /**
@@ -121,5 +124,42 @@ class Yii2InstancesRepository implements IServiceInstancesRepository
         }
 
         throw new \Exception('Can not operate with "' . get_class($serviceInstance) . '" instance.');
+    }
+
+    /**
+     * @param ITriggerEvent $triggerEvent
+     *
+     * @return IServiceInstance|null
+     * @throws \Exception
+     */
+    public function identifyServiceByTriggerEvent(ITriggerEvent $triggerEvent): IServiceInstance
+    {
+        $instance = $this->find([IServiceInstance::NAME => $triggerEvent->getServiceName()])->one();
+
+        if ($instance) {
+            $description = Yii2DescriptionsRepository::getInstance()->find([
+                IServiceDescription::FIELD__SERVICE_NAME => $instance->getServiceName()
+            ])->one();
+
+            if ($description) {
+                $describer = $description->getDescriber();
+                $describer->setServiceConfig($description->getConfig());
+                $instance->setDescriber($describer);
+            } else {
+                throw new \Exception('Missed "' . $instance->getServiceName() . '" description');
+            }
+        }
+
+        return $instance;
+    }
+
+    /**
+     * @param ITrigger $trigger
+     *
+     * @return IServiceInstance|null
+     */
+    public function identifyDestinationServiceByTrigger(ITrigger $trigger)
+    {
+        return $this->find([IServiceInstance::NAME => $trigger->getDestinationService()])->one();
     }
 }
